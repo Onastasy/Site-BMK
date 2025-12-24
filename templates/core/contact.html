@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Контакты{% endblock %}
+{% block content %}
+<h1>Форма обратной связи</h1>
+<p>Оставьте контакты, и мы вам перезвоним.</p>
+<form method="post" class="form">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Отправить</button>
+</form>
+{% endblock %}

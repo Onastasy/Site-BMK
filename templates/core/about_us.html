@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Преимущества{% endblock %}
+{% block content %}
+{% load static %}
+<h1>О нас</h1>
+
+<div class="grid">
+  <section class="panel">
+    <h2>Меняем будущее</h2>
+    <p> Мы занимаемся разработкой программного обеспечения и систем внутренней цифровизации для промышленных и логистических компаний.</p>
+  </section>
+  
+  <section class="panel"><img src="{% static 'img/Снимок.JPG' %}" alt="Описание изображения"></section>
+</div>
+
+<section class="panel">
+    <h2>Технологический стек</h2>
+    <p>БМК Софт обладает богатым опытом разработки в современном технологическом стеке.</p>
+  <ul>
+    <li><b>Backend-разработка</b>
+	PostgreSQL,
+	Swagger,
+	Kubernetes, 
+	Jenkins,
+	Jira,
+	Confluence,
+	JDBC,
+	Open API,
+	Spring boot 2,
+	REST API,
+	SOAP API,
+	liquibase.</li>
+  <li><b>Frontend-разработка</b>
+    ReactJS,
+	Redux-toolkit,
+	TypeScript,
+	SASS,
+	Scss,
+	CSS modules,
+	Jest,
+	Material-UI.</li>
+  <li><b>Тестирование</b>
+    Zephyr,
+	Postman,
+	PostgreSQL,
+	SoapUI,
+	Jenkins,
+	REST,
+	SOAP.</li>
+  <li><b>Аналитика и дизайн</b>
+    Jira,
+	Confluence,
+	Draw.io,
+	BPMN,
+	SCRUM,
+	XSD,
+	XML,
+	UML,
+	Visual Paradigm,
+	Postman, Swagger,
+	Sequence diagram.</li>
+</section>
+
+<section class="panel">
+    <h2>Наша миссия</h2>
+    <p>Наша миссия — помогать компаниям расти за счёт технологий: автоматизировать процессы, повышать эффективность и открывать новые возможности для развития.</p>
+  </section>
+{% endblock %}

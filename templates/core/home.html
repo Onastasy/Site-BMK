@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+    <h1>БМК Софт</h1>
+    <p>Цифровая трансформация вашей компании</p>
+
+    <div class="image-container">
+        <img src="{% static 'img/LOGO_1.png' %}" alt="Логотип компании">
+    </div>
+
+    <div class="grid">
+        <section class="panel">
+            <h2>О нас</h2>
+            <p><a class="btn" href="{% url 'about_us' %}">Подробнее</a></p>
+        </section>
+		<section class="panel">
+            <h2>Преимущества</h2>
+            <p><a class="btn" href="{% url 'advantages' %}">Перейти</a></p>
+        </section>
+        <section class="panel">
+            <h2>Новости</h2>
+            <p><a class="btn" href="{% url 'news:list' %}">Подробнее</a></p>
+        </section>
+        <section class="panel">
+            <h2>Вакансии</h2>
+            <p><a class="btn" href="{% url 'vacancies' %}">Перейти</a></p>
+        </section>
+        
+    </div>
+{% endblock %}
+

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Профиль{% endblock %}
+{% block content %}
+<h1>Профиль</h1>
+<p>Логин: <b>{{ user.username }}</b></p>
+<p>Роль: <b>{{ role }}</b></p>
+<p class="muted">Группы: {{ groups }}</p>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Спасибо{% endblock %}
+{% block content %}
+<h1>Спасибо!</h1>
+<p><b>{{ data.name }}</b>, сообщение принято.</p>
+<pre class="msg">{{ data.message }}</pre>
+<p><a href="{% url 'contact' %}">Назад</a></p>
+{% endblock %}

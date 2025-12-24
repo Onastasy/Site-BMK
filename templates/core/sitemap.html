@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Карта сайта{% endblock %}
+{% block content %}
+<h1>Карта сайта</h1>
+<ul class="sitemap">
+  <li><a href="{% url 'home' %}">Главная</a></li>
+  <li><a href="{% url 'messaging:inbox' %}">Вход</a></li>
+  <li><a href="{% url 'news:list' %}">Новости</a></li>
+  <li><a href="{% url 'search' %}">Поиск</a></li>
+  <li><a href="{% url 'contact' %}">Контакты</a></li>
+  <li><a href="{% url 'about_us' %}">О нас</a></li>
+  <li><a href="{% url 'advantages' %}">Преимущества</a></li>
+  <li><a href="{% url 'team' %}">Наша команда</a></li>
+  <li><a href="{% url 'vacancies' %}">Вакансии</a></li>
+  <li><a href="/admin/">Панель администратора</a></li>
+</ul>
+{% endblock %}
