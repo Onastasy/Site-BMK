@@ -1,0 +1,86 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Контактная информация</h6>
+            </div>
+            <div class="card-body">
+                {% if contact_info %}
+                <table class="table table-sm">
+                    <tr><th>Организация:</th><td>{{ contact_info.org }}</td></tr>
+                    <tr><th>Телефон:</th><td>{{ contact_info.phone }}</td></tr>
+                    <tr><th>Email:</th><td>{{ contact_info.email }}</td></tr>
+                    <tr><th>Адрес:</th><td>{{ contact_info.address }}</td></tr>
+                </table>
+                <a href="/admin/core/contactinfo/1/change/" 
+                   class="btn btn-primary btn-sm" target="_blank">
+                    Редактировать контакты
+                </a>
+                {% else %}
+                <div class="alert alert-warning">
+                    Контактная информация не заполнена.
+                    <a href="/admin/core/contactinfo/add/" class="alert-link">Добавить</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Баннеры</h6>
+            </div>
+            <div class="card-body">
+                {% if banners %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Текст</th>
+                            <th>Ссылка</th>
+                            <th>Активен</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for banner in banners %}
+                        <tr>
+                            <td>{{ banner.text }}</td>
+                            <td>{{ banner.href|default:"—" }}</td>
+                            <td>
+                                {% if banner.enabled %}
+                                <span class="badge bg-success">Да</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Нет</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="alert alert-info">Баннеры не созданы.</div>
+                {% endif %}
+                <a href="/admin/core/banner/" class="btn btn-primary btn-sm" target="_blank">
+                    Управление баннерами
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h6 class="mb-0">Системная информация</h6>
+    </div>
+    <div class="card-body">
+        <table class="table table-sm">
+            <tr><th>Версия Django:</th><td>{% now "Y" %} — Django 4.x/5.x</td></tr>
+            <tr><th>Проект:</th><td>БМК Софт — Сервис онлайн-коммуникации</td></tr>
+            <tr><th>Разработчик:</th><td>Ваше ФИО (студент-практикант)</td></tr>
+        </table>
+    </div>
+</div>
+{% endblock %}
