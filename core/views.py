@@ -69,3 +69,7 @@ def team(request):
 
 def vacancies(request):
     return render(request, "core/vacancies.html")
+
+def privacy_policy(request):
+    """Политика конфиденциальности"""
+    return render(request, "core/privacy.html")
