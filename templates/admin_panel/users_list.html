@@ -1,0 +1,38 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block content %}
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Логин</th>
+            <th>Email</th>
+            <th>Имя</th>
+            <th>Группы</th>
+            <th>Активен</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr {% if not user.is_active %}class="table-secondary"{% endif %}>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email|default:"—" }}</td>
+            <td>{{ user.get_full_name|default:"—" }}</td>
+            <td>{{ user.groups_list }}</td>
+            <td>
+                {% if user.is_active %}
+                <span class="badge bg-success">Да</span>
+                {% else %}
+                <span class="badge bg-danger">Нет</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'admin_panel:user_edit' user.id %}" class="btn btn-sm btn-primary">Редактировать</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
