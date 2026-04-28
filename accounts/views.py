@@ -41,3 +41,68 @@ def profile(request):
     groups = ", ".join(g.name for g in request.user.groups.all()) or "—"
     role = "admin" if request.user.groups.filter(name="admin").exists() else "user"
     return render(request, "accounts/profile.html", {"groups": groups, "role": role})
+
+@login_required
+def dashboard(request):
+    """Личный кабинет - главная страница"""
+    # Получаем данные пользователя
+    user_groups = ", ".join(g.name for g in request.user.groups.all()) or "—"
+    role = "admin" if request.user.groups.filter(name="admin").exists() else "user"
+
+    context = {
+        "groups": user_groups,
+        "role": role,
+        "user": request.user,
+    }
+    return render(request, "accounts/dashboard.html", context)
+
+
+@login_required
+def employee_list(request):
+    """Список сотрудников компании"""
+    from django.contrib.auth.models import User
+
+    employees = User.objects.filter(is_active=True).order_by('last_name', 'first_name')
+
+    # Добавляем информацию о группах для каждого сотрудника
+    for emp in employees:
+        emp.groups_list = ", ".join(g.name for g in emp.groups.all()) or "—"
+
+    return render(request, "accounts/employee_list.html", {
+        "employees": employees
+    })
+
+
+@login_required
+def edit_profile(request):
+    """Редактирование профиля пользователя"""
+    if request.method == "POST":
+        user = request.user
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
+        user.email = request.POST.get("email", user.email)
+
+        # Если есть дополнительные поля в модели User или Profile
+        if hasattr(user, 'profile'):
+            user.profile.phone = request.POST.get("phone", getattr(user.profile, 'phone', ''))
+            user.profile.department = request.POST.get("department", getattr(user.profile, 'department', ''))
+            user.profile.position = request.POST.get("position", getattr(user.profile, 'position', ''))
+            user.profile.save()
+
+        user.save()
+        messages.success(request, "Профиль успешно обновлён!")
+        return redirect("profile")
+
+    return render(request, "accounts/edit_profile.html", {
+        "user": request.user
+    })
+
+
+@login_required
+def user_files(request):
+    """Файлы пользователя (если ещё нет в messaging)"""
+    # Здесь можно подключить модель FileAttachment из messaging
+    # или оставить заглушку для будущей реализации
+    return render(request, "accounts/files.html", {
+        "files": []  # Замените на реальные данные из БД
+    })
