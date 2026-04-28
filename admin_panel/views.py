@@ -13,11 +13,10 @@ def is_admin(user):
 
 
 @login_required
-@user_passes_test(is_admin, login_url='accounts:login')
+@user_passes_test(is_admin, login_url='/accounts/login/')
 def dashboard(request):
     """Главная страница"""
 
-    # Базовая статистика
     stats = {
         'total_users': User.objects.filter(is_active=True).count(),
         'total_groups': Group.objects.count(),
@@ -29,7 +28,6 @@ def dashboard(request):
         ).count(),
     }
 
-    # Получить статистику из других приложений
     try:
         from news.models import NewsPost
         stats['total_news'] = NewsPost.objects.count()
@@ -42,7 +40,6 @@ def dashboard(request):
     except ImportError:
         stats['total_messages'] = 0
 
-    # Последние зарегистрированные пользователи
     latest_users = User.objects.filter(is_active=True).order_by('-date_joined')[:10]
 
     context = {
@@ -54,12 +51,11 @@ def dashboard(request):
 
 
 @login_required
-@user_passes_test(is_admin, login_url='accounts:login')
+@user_passes_test(is_admin, login_url='/accounts/login/')
 def users_list(request):
     """Управление пользователями"""
     users = User.objects.all().order_by('-date_joined')
 
-    # Добавить информацию о группах
     for user in users:
         user.groups_list = ", ".join(g.name for g in user.groups.all()) or "—"
         user.is_admin = user.groups.filter(name="admin").exists()
@@ -73,20 +69,18 @@ def users_list(request):
 
 
 @login_required
-@user_passes_test(is_admin, login_url='accounts:login')
+@user_passes_test(is_admin, login_url='/accounts/login/')
 def user_edit(request, user_id):
     """Редактирование пользователя"""
     user = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
-        # Обновление основных данных
         user.username = request.POST.get("username", user.username)
         user.email = request.POST.get("email", user.email)
         user.first_name = request.POST.get("first_name", user.first_name)
         user.last_name = request.POST.get("last_name", user.last_name)
         user.is_active = request.POST.get("is_active") == "on"
 
-        # Обновление групп
         groups = request.POST.getlist("groups")
         user.groups.clear()
         for group_name in groups:
@@ -96,7 +90,7 @@ def user_edit(request, user_id):
 
         user.save()
         messages.success(request, f"Пользователь {user.username} обновлён!")
-        return redirect("admin_panel:users_list")
+        return redirect("admin_users")
 
     all_groups = Group.objects.all()
     user_groups = list(user.groups.values_list('name', flat=True))
@@ -124,7 +118,7 @@ def groups_list(request):
 
 
 @login_required
-@user_passes_test(is_admin, login_url='accounts:login')
+@user_passes_test(is_admin, login_url='/accounts/login/')
 def news_management(request):
     """Управление новостями"""
     news_list = []
@@ -142,7 +136,7 @@ def news_management(request):
 
 
 @login_required
-@user_passes_test(is_admin, login_url='accounts:login')
+@user_passes_test(is_admin, login_url='/accounts/login/')
 def site_settings(request):
     """Настройки сайта"""
     from core.models import ContactInfo, Banner
@@ -159,10 +153,9 @@ def site_settings(request):
 
 
 @login_required
-@user_passes_test(is_admin, login_url='accounts:login')
+@user_passes_test(is_admin, login_url='/accounts/login/')
 def activity_log(request):
     """Журнал действий"""
-    # Здесь можно создать модель ActivityLog и выводить действия пользователей
     context = {
         'title': 'Журнал действий',
         'activities': [],

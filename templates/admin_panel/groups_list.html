@@ -1,14 +1,10 @@
 {% extends 'admin_panel/base_admin.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h5>Список групп (ролей)</h5>
-    <a href="/admin/auth/group/add/" class="btn btn-primary btn-sm" target="_blank">
-        <i class="bi bi-plus-circle"></i> Добавить группу (через админку)
-    </a>
-</div>
+<h5>Список групп (ролей)</h5>
+<p class="text-muted">Группы создаются и управляются через командную строку или встроенную админку Django.</p>
 
-<div class="row">
+<div class="row mt-3">
     {% for group in groups %}
     <div class="col-md-4 mb-3">
         <div class="card">
@@ -27,18 +23,19 @@
                 <p class="card-text">
                     <strong>Пользователей в группе:</strong> {{ group.user_count }}
                 </p>
-                <a href="/admin/auth/group/{{ group.id }}/change/" 
-                   class="btn btn-outline-primary btn-sm" target="_blank">
-                    Редактировать в админке
-                </a>
             </div>
         </div>
     </div>
     {% empty %}
     <div class="col-12">
-        <div class="alert alert-info">
-            Группы не созданы. 
-            <a href="/admin/auth/group/add/" class="alert-link">Создайте группы admin, manager, user</a>
+        <div class="alert alert-warning">
+            Группы не созданы. Выполните в терминале:<br>
+            <code>python manage.py shell</code><br>
+            Затем:<br>
+            <code>from django.contrib.auth.models import Group</code><br>
+            <code>Group.objects.get_or_create(name='admin')</code><br>
+            <code>Group.objects.get_or_create(name='manager')</code><br>
+            <code>Group.objects.get_or_create(name='user')</code>
         </div>
     </div>
     {% endfor %}
