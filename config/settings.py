@@ -3,7 +3,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-demo-key-change-me"
 DEBUG = True
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
   "django.contrib.admin",
@@ -26,7 +26,7 @@ MIDDLEWARE = [
   "django.contrib.auth.middleware.AuthenticationMiddleware",
   "django.contrib.messages.middleware.MessageMiddleware",
   "django.middleware.clickjacking.XFrameOptionsMiddleware",
-  "core.middleware.Redirect404Middleware",
+  #"core.middleware.Redirect404Middleware",#
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -46,6 +46,7 @@ TEMPLATES = [{
       "django.template.context_processors.tz",
       "django.contrib.messages.context_processors.messages",
       "core.context_processors.site_settings",
+      "core.context_processors.breadcrumbs",
     ],
   },
 }]
@@ -74,4 +75,4 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "home"
 
-ALLOWED_HOSTS = ['site-bmk.onrender.com', 'https://site-bmk.onrender.com']
+
