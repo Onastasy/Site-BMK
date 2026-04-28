@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from core import views as core_views
+from admin_panel import views as admin_panel_views
 
 urlpatterns = [
   path("admin/", admin.site.urls),
@@ -18,6 +19,14 @@ urlpatterns = [
   path("news/", include("news.urls")),
   path("messages/", include("messaging.urls")),
   path("accounts/", include("accounts.urls")),
+  path('privacy/', core_views.privacy_policy, name='privacy'),
+  path('admin-panel/', admin_panel_views.dashboard, name='admin_dashboard'),
+  path('admin-panel/users/', admin_panel_views.users_list, name='admin_users'),
+  path('admin-panel/users/<int:user_id>/edit/', admin_panel_views.user_edit, name='admin_user_edit'),
+  path('admin-panel/groups/', admin_panel_views.groups_list, name='admin_groups'),
+  path('admin-panel/news/', admin_panel_views.news_management, name='admin_news'),
+  path('admin-panel/settings/', admin_panel_views.site_settings, name='admin_settings'),
+  path('admin-panel/activity/', admin_panel_views.activity_log, name='admin_activity'),
 ]
 
 handler404 = "core.views.handler404"
