@@ -1,0 +1,56 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h6 class="mb-0">Журнал действий пользователей</h6>
+    </div>
+    <div class="card-body">
+        {% if activities %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Дата/Время</th>
+                        <th>Пользователь</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activities %}
+                    <tr>
+                        <td>{{ activity.timestamp|date:"d.m.Y H:i:s" }}</td>
+                        <td>{{ activity.user.username }}</td>
+                        <td>{{ activity.action }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <p>Журнал действий пока пуст.</p>
+            <p>Для активации журнала необходимо создать модель <code>UserActivity</code> и добавить логирование действий пользователей (вход в систему, создание заявок, отправка сообщений и т.д.).</p>
+            <p>Это можно сделать позже, когда будете дорабатывать функционал.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h6 class="mb-0">Примерный перечень отслеживаемых действий:</h6>
+    </div>
+    <div class="card-body">
+        <ul>
+            <li>Вход пользователя в систему</li>
+            <li>Регистрация нового пользователя</li>
+            <li>Создание/редактирование заявки</li>
+            <li>Отправка сообщения в чат</li>
+            <li>Загрузка/удаление файла</li>
+            <li>Генерация документа</li>
+            <li>Изменение роли пользователя администратором</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
