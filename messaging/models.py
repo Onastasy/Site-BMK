@@ -185,6 +185,37 @@ class MessageAttachment(models.Model):
     file_hash = models.CharField('Хеш файла', max_length=64, blank=True, null=True)
     download_count = models.IntegerField('Скачиваний', default=0)
 
+    # Поле для реального файла
+    file = models.FileField('Файл', upload_to='chat_attachments/%Y/%m/', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Вложение'
+        verbose_name_plural = 'Вложения'
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"Файл {self.file_name} к сообщению #{self.message.id}"
+
+    @property
+    def is_image(self):
+        """Проверка, является ли файл изображением"""
+        return self.file_type.startswith('image/')
+
+    @property
+    def is_document(self):
+        """Проверка, является ли файл документом"""
+        doc_types = ['application/pdf', 'application/msword',
+                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                     'application/vnd.ms-excel',
+                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+        return self.file_type in doc_types
+
+    @property
+    def is_archive(self):
+        """Проверка, является ли файл архивом"""
+        return self.file_type in ['application/zip', 'application/x-rar-compressed',
+                                  'application/gzip', 'application/x-7z-compressed']
+
     class Meta:
         verbose_name = 'Вложение'
         verbose_name_plural = 'Вложения'
@@ -267,3 +298,4 @@ class PinnedMessage(models.Model):
 
     def __str__(self):
         return f"Закреплено в {self.chat.title}"
+
