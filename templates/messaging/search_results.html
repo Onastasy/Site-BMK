@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>🔍 Поиск в чате: {{ chat.title }}</h1>
+
+<form action="{% url 'messaging:search_messages' chat.id %}" method="GET" style="margin-bottom: 20px;">
+  <div style="display: flex; gap: 10px; max-width: 500px;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Введите текст для поиска..." 
+           style="flex: 1; padding: 10px; border: 1px solid #dee2e6; border-radius: 5px;">
+    <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Найти
+    </button>
+  </div>
+</form>
+
+{% if query %}
+  <p>Результаты поиска по запросу: <b>{{ query }}</b></p>
+  
+  {% if messages_list %}
+    {% for msg in messages_list %}
+    <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <strong>{{ msg.sender.get_full_name|default:msg.sender.username }}</strong>
+        <small style="color: #6c757d;">{{ msg.sent_at|date:"d.m.Y H:i" }}</small>
+      </div>
+      <p style="margin-bottom: 0;">{{ msg.content|linebreaksbr }}</p>
+      {% if msg.is_edited %}
+        <small style="color: #6c757d;">(отредактировано)</small>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <p style="color: #6c757d;">Ничего не найдено. Попробуйте изменить запрос.</p>
+  {% endif %}
+{% else %}
+  <p style="color: #6c757d;">Введите текст для поиска сообщений в чате.</p>
+{% endif %}
+
+<p style="margin-top: 20px;">
+  <a href="{% url 'messaging:chat_room' chat.id %}">← Вернуться в чат</a>
+</p>
+{% endblock %}
