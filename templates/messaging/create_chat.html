@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Создание нового чата</h2>
+<form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Название чата</label>
+        <input type="text" name="title" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Тип чата</label>
+        <select name="type" class="form-control">
+            <option value="GROUP">Групповой</option>
+            <option value="CHANNEL">Канал</option>
+            <option value="SUPPORT">Техподдержка</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Участники</label>
+        <select name="members" multiple class="form-control" size="5">
+            {% for user in users %}
+            <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+            {% endfor %}
+        </select>
+        <small class="text-muted">Удерживайте Ctrl для выбора нескольких</small>
+    </div>
+    <button type="submit" class="btn btn-success">Создать чат</button>
+    <a href="{% url 'messaging:chat_list' %}" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}
