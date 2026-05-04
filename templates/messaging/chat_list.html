@@ -95,19 +95,30 @@
     </div>
 
     <!-- Форма отправки сообщения -->
-    <div class="message-input-area">
-        <form id="messageForm" method="POST" action="{% url 'messaging:send_chat_message' selected_chat.id %}">
-            {% csrf_token %}
-            <div class="input-group">
-                <input type="text" name="content" class="form-control"
-                       placeholder="Введите сообщение..." id="messageInput" autocomplete="off">
-                <button class="btn btn-success" type="submit" id="sendButton">
-                    📤 Отправить
-                </button>
-            </div>
-            <small class="text-muted">Нажмите Enter для отправки</small>
-        </form>
-    </div>
+<div class="message-input-area">
+    <form id="messageForm" method="POST"
+          action="{% url 'messaging:send_chat_message' selected_chat.id %}"
+          enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="input-group">
+            <label class="btn btn-outline-secondary" for="fileInput" title="Прикрепить файл">
+                📎
+            </label>
+            <input type="file" id="fileInput" name="files" multiple
+                   style="display: none;" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+            <input type="text" name="content" class="form-control"
+                   placeholder="Введите сообщение... (поддерживается Markdown)"
+                   id="messageInput" autocomplete="off">
+            <button class="btn btn-success" type="submit" id="sendButton">
+                📤 Отправить
+            </button>
+        </div>
+        <div id="selectedFiles" class="mt-2"></div>
+        <small class="text-muted">
+            Нажмите Enter для отправки | 📎 Файлы | **жирный** *курсив* `код`
+        </small>
+    </form>
+</div>
 
 {% else %}
     <!-- ====== НЕТ ВЫБРАННОГО ЧАТА ====== -->
@@ -234,6 +245,28 @@ setInterval(() => {
             }
         });
 }, 3000);
+
+    // ====== ОТОБРАЖЕНИЕ ВЫБРАННЫХ ФАЙЛОВ ======
+document.getElementById('fileInput').addEventListener('change', function() {
+    const fileList = this.files;
+    const container = document.getElementById('selectedFiles');
+    container.innerHTML = '';
+
+    for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        const size = file.size > 1024*1024
+            ? (file.size/(1024*1024)).toFixed(1) + ' MB'
+            : (file.size/1024).toFixed(0) + ' KB';
+
+        container.innerHTML += `
+            <span class="badge bg-light text-dark me-2 mb-1">
+                📎 ${file.name} (${size})
+                <button type="button" class="btn-close btn-close-sm ms-1"
+                        onclick="this.parentElement.remove()"></button>
+            </span>
+        `;
+    }
+});
 </script>
 {% endif %}
 {% endblock %}
