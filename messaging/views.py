@@ -31,3 +31,183 @@ def send_message(request):
         "outbox_items": Message.objects.filter(from_user=request.user)[:50],
         "form": form,
     })
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import ChatRoom, ChatMembership, ChatMessage, MessageAttachment, ChatNotification
+
+
+@login_required
+def chat_list(request):
+    """Список групповых чатов пользователя"""
+    memberships = ChatMembership.objects.filter(
+        user=request.user,
+        left_at__isnull=True
+    ).select_related('chat')
+
+    chats = []
+    for m in memberships:
+        chat = m.chat
+        last_msg = chat.messages.filter(is_deleted=False).first()
+        unread = chat.messages.exclude(read_by=request.user).count() if last_msg else 0
+
+        chats.append({
+            'chat': chat,
+            'last_msg': last_msg,
+            'unread': unread,
+            'role': m.role_in_chat,
+        })
+
+    return render(request, 'messaging/chat_list.html', {
+        'chats': chats
+    })
+
+
+@login_required
+def chat_room(request, chat_id):
+    """Комната группового чата"""
+    chat = get_object_or_404(
+        ChatRoom.objects.filter(members__user=request.user),
+        id=chat_id
+    )
+
+    messages = chat.messages.filter(
+        is_deleted=False
+    ).select_related('sender').prefetch_related('attachments', 'read_by').order_by('-sent_at')[:50]
+
+    # Отмечаем как прочитанные
+    unread = chat.messages.exclude(read_by=request.user)
+    for msg in unread:
+        msg.read_by.add(request.user)
+
+    # Обновляем last_read_message
+    membership = ChatMembership.objects.get(user=request.user, chat=chat)
+    last_message = chat.messages.first()
+    if last_message:
+        membership.last_read_message = last_message
+        membership.save(update_fields=['last_read_message'])
+
+    return render(request, 'messaging/chat_room.html', {
+        'chat': chat,
+        'messages': reversed(list(messages)),
+    })
+
+
+@login_required
+def send_chat_message(request, chat_id):
+    """Отправка сообщения в групповой чат (AJAX)"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Только POST'}, status=405)
+
+    chat = get_object_or_404(ChatRoom, id=chat_id)
+    content = request.POST.get('content', '').strip()
+
+    if not content and not request.FILES:
+        return JsonResponse({'error': 'Пустое сообщение'}, status=400)
+
+    message = ChatMessage.objects.create(
+        chat=chat,
+        sender=request.user,
+        content=content
+    )
+
+    # Обработка файлов
+    for file in request.FILES.getlist('files'):
+        MessageAttachment.objects.create(
+            message=message,
+            file_name=file.name,
+            file_path=f'attachments/{chat_id}/{file.name}',
+            file_type=file.content_type,
+            file_size=file.size
+        )
+
+    # Обновляем last_message у чата
+    chat.last_message = message
+    chat.save(update_fields=['last_message'])
+
+    return JsonResponse({
+        'success': True,
+        'message': {
+            'id': message.id,
+            'content': message.content,
+            'sender': message.sender.get_full_name() or message.sender.username,
+            'sent_at': message.sent_at.strftime('%H:%M'),
+        }
+    })
+
+
+@login_required
+def get_chat_messages(request, chat_id):
+    """Получение новых сообщений (AJAX)"""
+    chat = get_object_or_404(ChatRoom, id=chat_id)
+    after_id = request.GET.get('after', 0)
+
+    messages_qs = chat.messages.filter(
+        id__gt=after_id,
+        is_deleted=False
+    ).select_related('sender').order_by('sent_at')
+
+    data = [{
+        'id': msg.id,
+        'content': msg.content,
+        'sender': msg.sender.get_full_name() or msg.sender.username,
+        'sent_at': msg.sent_at.strftime('%H:%M'),
+        'is_own': msg.sender == request.user,
+    } for msg in messages_qs]
+
+    return JsonResponse({'messages': data})
+
+
+@login_required
+def create_chat_room(request):
+    """Создание нового группового чата"""
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        chat_type = request.POST.get('type', 'GROUP')
+        member_ids = request.POST.getlist('members')
+
+        chat = ChatRoom.objects.create(
+            title=title,
+            type=chat_type,
+            created_by=request.user
+        )
+
+        # Добавляем создателя как владельца
+        ChatMembership.objects.create(
+            user=request.user,
+            chat=chat,
+            role_in_chat='OWNER'
+        )
+
+        # Добавляем выбранных участников
+        for user_id in member_ids:
+            user = User.objects.get(id=user_id)
+            ChatMembership.objects.get_or_create(
+                user=user,
+                chat=chat,
+                defaults={'role_in_chat': 'MEMBER'}
+            )
+
+        messages.success(request, f'Чат "{title}" создан!')
+        return redirect('messaging:chat_room', chat_id=chat.id)
+
+    users = User.objects.filter(is_active=True).exclude(id=request.user.id)
+    return render(request, 'messaging/create_chat.html', {
+        'users': users
+    })
+
+
+@login_required
+def chat_members(request, chat_id):
+    """Участники чата"""
+    chat = get_object_or_404(ChatRoom, id=chat_id)
+    memberships = ChatMembership.objects.filter(
+        chat=chat,
+        left_at__isnull=True
+    ).select_related('user')
+
+    return render(request, 'messaging/chat_members.html', {
+        'chat': chat,
+        'memberships': memberships
+    })
