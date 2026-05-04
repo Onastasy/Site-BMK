@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Редактирование профиля{% endblock %}
+{% block content %}
+<h1>Редактирование профиля</h1>
+
+<form method="POST" style="max-width: 500px;">
+  {% csrf_token %}
+  
+  <div style="margin-bottom: 15px;">
+    <label>Имя:</label>
+    <input type="text" name="first_name" value="{{ user.first_name }}" 
+           style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <label>Фамилия:</label>
+    <input type="text" name="last_name" value="{{ user.last_name }}"
+           style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <label>Email:</label>
+    <input type="email" name="email" value="{{ user.email }}"
+           style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+  </div>
+
+  {% if user.profile %}
+  <div style="margin-bottom: 15px;">
+    <label>Телефон:</label>
+    <input type="text" name="phone" value="{{ user.profile.phone|default:'' }}"
+           style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <label>Отдел:</label>
+    <input type="text" name="department" value="{{ user.profile.department|default:'' }}"
+           style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <label>Должность:</label>
+    <input type="text" name="position" value="{{ user.profile.position|default:'' }}"
+           style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+  </div>
+  {% endif %}
+
+  <button type="submit" style="padding: 10px 25px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+    💾 Сохранить
+  </button>
+  
+  <a href="{% url 'profile' %}" style="margin-left: 10px; color: #6c757d;">Отмена</a>
+</form>
+{% endblock %}
