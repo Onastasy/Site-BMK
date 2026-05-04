@@ -299,3 +299,29 @@ class PinnedMessage(models.Model):
     def __str__(self):
         return f"Закреплено в {self.chat.title}"
 
+
+class Integration(models.Model):
+    """Интеграции с внешними системами"""
+
+    INTEGRATION_TYPES = [
+        ('JIRA', 'Jira'),
+        ('GITHUB', 'GitHub'),
+        ('GITLAB', 'GitLab'),
+        ('TELEGRAM', 'Telegram'),
+    ]
+
+    type = models.CharField('Тип', max_length=50, choices=INTEGRATION_TYPES)
+    name = models.CharField('Название', max_length=100)
+    webhook_url = models.URLField('Webhook URL', blank=True, null=True)
+    api_key = models.CharField('API Key', max_length=255, blank=True, null=True)
+    config = models.JSONField('Конфигурация', default=dict, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField('Активна', default=True)
+
+    class Meta:
+        verbose_name = 'Интеграция'
+        verbose_name_plural = 'Интеграции'
+
+    def __str__(self):
+        return f"{self.get_type_display()}: {self.name}"
