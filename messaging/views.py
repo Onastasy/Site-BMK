@@ -299,3 +299,33 @@ def search_messages(request, chat_id):
         'query': query,
         'messages_list': messages_list,
     })
+
+
+@login_required
+def pin_message(request, chat_id, message_id):
+    """Закрепление/открепление сообщения"""
+    chat = get_object_or_404(ChatRoom, id=chat_id)
+    message = get_object_or_404(ChatMessage, id=message_id, chat=chat)
+
+    # Проверяем права (админ или владелец чата)
+    membership = ChatMembership.objects.get(user=request.user, chat=chat)
+    if membership.role_in_chat not in ['OWNER', 'ADMIN']:
+        return JsonResponse({'error': 'Недостаточно прав'}, status=403)
+
+    pinned, created = PinnedMessage.objects.get_or_create(
+        chat=chat,
+        message=message,
+        pinned_by=request.user,
+        defaults={'is_active': True}
+    )
+
+    if not created:
+        # Если уже закреплено — открепляем
+        pinned.is_active = not pinned.is_active
+        pinned.save()
+
+    return JsonResponse({
+        'success': True,
+        'is_pinned': pinned.is_active,
+        'message_id': message.id
+    })
