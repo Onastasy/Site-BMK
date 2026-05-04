@@ -1,8 +1,10 @@
+from .markdown_utils import format_message
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from .models import Message
 from .forms import SendMessageForm
+
 
 @login_required
 def inbox(request):
@@ -216,6 +218,7 @@ def get_chat_messages(request, chat_id):
     data = [{
         'id': msg.id,
         'content': msg.content,
+        'content_formatted': format_message(msg.content),  # ← форматированная версия
         'sender': msg.sender.get_full_name() or msg.sender.username,
         'sent_at': msg.sent_at.strftime('%H:%M'),
         'is_own': msg.sender == request.user,
