@@ -1,0 +1,103 @@
+{% extends 'messaging/chat_base.html' %}
+
+{% block chat_sidebar %}
+<div class="p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">💬 Чаты</h5>
+        <a href="{% url 'messaging:create_chat' %}" class="btn btn-primary btn-sm">+</a>
+    </div>
+    <div class="list-group">
+        {% for m in request.user.chat_memberships.all %}
+        <a href="{% url 'messaging:chat_room' m.chat.id %}" 
+           class="list-group-item list-group-item-action chat-list-item {% if m.chat.id == chat.id %}active{% endif %}">
+            <strong>{{ m.chat.title }}</strong>
+            <br>
+            <small>{{ m.get_role_in_chat_display }}</small>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block chat_main %}
+<div class="chat-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ chat.title }}</h5>
+        <div>
+            <a href="{% url 'messaging:chat_members' chat.id %}" class="btn btn-sm btn-outline-primary">
+                👥 Участники ({{ chat.members.count }})
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="messages-area" id="messagesArea">
+    {% for msg in messages %}
+    <div class="message-bubble {% if msg.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+        {% if msg.sender != request.user %}
+        <div class="message-sender">{{ msg.sender.get_full_name|default:msg.sender.username }}</div>
+        {% endif %}
+        <div class="message-content">{{ msg.content }}</div>
+        <div class="message-time">{{ msg.sent_at|time:"H:i" }}</div>
+    </div>
+    {% empty %}
+    <p class="text-muted text-center mt-5">Нет сообщений. Напишите первое!</p>
+    {% endfor %}
+</div>
+
+<div class="message-input-area">
+    <form id="messageForm" method="POST" action="{% url 'messaging:send_chat_message' chat.id %}">
+        {% csrf_token %}
+        <div class="input-group">
+            <input type="text" name="content" class="form-control" placeholder="Введите сообщение..." id="messageInput" autocomplete="off">
+            <button class="btn btn-success" type="submit">📤 Отправить</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Автопрокрутка вниз
+function scrollToBottom() {
+    const area = document.getElementById('messagesArea');
+    area.scrollTop = area.scrollHeight;
+}
+
+// Отправка без перезагрузки
+document.getElementById('messageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = this;
+    const input = document.getElementById('messageInput');
+    const content = input.value.trim();
+    if (!content) return;
+    
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'content=' + encodeURIComponent(content)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            input.value = '';
+            // Добавляем сообщение в чат
+            const area = document.getElementById('messagesArea');
+            const isSent = true; // своё сообщение
+            area.innerHTML += `
+                <div class="message-bubble message-sent">
+                    <div class="message-content">${data.message.content}</div>
+                    <div class="message-time">${data.message.sent_at}</div>
+                </div>
+            `;
+            scrollToBottom();
+        }
+    });
+});
+
+scrollToBottom();
+</script>
+{% endblock %}
