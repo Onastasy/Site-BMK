@@ -1,3 +1,4 @@
+
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -5,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import Group
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from accounts.models import UserProfile
 
 def login_view(request):
     next_url = request.GET.get("next") or reverse("profile")
@@ -36,11 +38,35 @@ def register_view(request):
         form = UserCreationForm()
     return render(request, "accounts/register.html", {"form": form})
 
+
 @login_required
 def profile(request):
+    """Профиль пользователя с возможностью смены статуса"""
+    if request.method == "POST":
+        # Обновление статуса
+        new_status = request.POST.get('status')
+        if new_status in ['online', 'away', 'busy', 'offline']:
+            request.user.profile.status = new_status
+            request.user.profile.save()
+            messages.success(request, 'Статус обновлён!')
+
+        # Обновление основных данных
+        request.user.first_name = request.POST.get('first_name', request.user.first_name)
+        request.user.last_name = request.POST.get('last_name', request.user.last_name)
+        request.user.email = request.POST.get('email', request.user.email)
+        request.user.save()
+
+        return redirect('profile')
+
     groups = ", ".join(g.name for g in request.user.groups.all()) or "—"
     role = "admin" if request.user.groups.filter(name="admin").exists() else "user"
-    return render(request, "accounts/profile.html", {"groups": groups, "role": role})
+
+    return render(request, "accounts/profile.html", {
+        "groups": groups,
+        "role": role,
+        "status_choices": UserProfile.STATUS_CHOICES,
+        "current_status": request.user.profile.status,
+    })
 
 @login_required
 def dashboard(request):
