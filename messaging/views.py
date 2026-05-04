@@ -40,11 +40,11 @@ from .models import ChatRoom, ChatMembership, ChatMessage, MessageAttachment, Ch
 
 @login_required
 def chat_list(request):
-    """Список групповых чатов пользователя"""
+    """Список групповых чатов пользователя с автооткрытием первого"""
     memberships = ChatMembership.objects.filter(
         user=request.user,
         left_at__isnull=True
-    ).select_related('chat')
+    ).select_related('chat').order_by('chat__title')  # ← сортировка по алфавиту
 
     chats = []
     for m in memberships:
@@ -59,10 +59,54 @@ def chat_list(request):
             'role': m.role_in_chat,
         })
 
-    return render(request, 'messaging/chat_list.html', {
-        'chats': chats
-    })
+    # Проверяем, выбран ли конкретный чат (GET-параметр)
+    selected_chat = None
+    chat_messages = []
 
+    chat_id = request.GET.get('chat')
+
+    # Если чат не выбран — открываем первый из списка
+    if not chat_id and chats:
+        selected_chat = chats[0]['chat']
+        chat_id = selected_chat.id
+    elif chat_id:
+        try:
+            selected_chat = ChatRoom.objects.get(
+                id=chat_id,
+                members__user=request.user,
+                members__left_at__isnull=True
+            )
+        except ChatRoom.DoesNotExist:
+            # Если чат не найден — берём первый
+            if chats:
+                selected_chat = chats[0]['chat']
+
+    # Загружаем сообщения для выбранного чата
+    if selected_chat:
+        chat_messages = selected_chat.messages.filter(
+            is_deleted=False
+        ).select_related('sender').prefetch_related('attachments', 'read_by').order_by('sent_at')[:50]
+
+        # Отмечаем как прочитанные
+        unread_msgs = selected_chat.messages.exclude(read_by=request.user)
+        for msg in unread_msgs:
+            msg.read_by.add(request.user)
+
+        # Обновляем last_read_message
+        try:
+            membership = ChatMembership.objects.get(user=request.user, chat=selected_chat)
+            last_message = selected_chat.messages.first()
+            if last_message:
+                membership.last_read_message = last_message
+                membership.save(update_fields=['last_read_message'])
+        except ChatMembership.DoesNotExist:
+            pass
+
+    return render(request, 'messaging/chat_list.html', {
+        'chats': chats,
+        'selected_chat': selected_chat,
+        'chat_messages': chat_messages,
+    })
 
 @login_required
 def chat_room(request, chat_id):

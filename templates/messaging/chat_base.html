@@ -2,17 +2,24 @@
 
 {% block title %}БМК Чат | {{ block.super }}{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <style>
+    /* Сброс отступов для чата */
+    main.card {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
     .chat-layout {
         display: flex;
-        height: calc(100vh - 160px);
-        border: 1px solid #dee2e6;
+        height: calc(100vh - 200px);
+        min-height: 500px;
         border-radius: 8px;
         overflow: hidden;
     }
     .chat-sidebar {
         width: 300px;
+        min-width: 250px;
         border-right: 1px solid #dee2e6;
         background: #f8f9fa;
         overflow-y: auto;
@@ -21,11 +28,13 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        min-width: 0;
+        background: #fff;
     }
     .chat-header {
         padding: 15px 20px;
         border-bottom: 1px solid #dee2e6;
-        background: #fff;
+        background: #fafafa;
     }
     .messages-area {
         flex: 1;
@@ -45,6 +54,7 @@
         border-radius: 12px;
         position: relative;
         box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        word-wrap: break-word;
     }
     .message-sent {
         background: #dcf8c6;
@@ -69,27 +79,54 @@
         margin-top: 4px;
     }
     .chat-list-item {
+        display: block;
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
         cursor: pointer;
         transition: background 0.2s;
+        text-decoration: none;
+        color: inherit;
     }
     .chat-list-item:hover {
         background: #e9ecef;
+        text-decoration: none;
+        color: inherit;
     }
     .chat-list-item.active {
         background: #007bff;
         color: white;
     }
+    .chat-list-item.active .text-muted {
+        color: rgba(255,255,255,0.7) !important;
+    }
     .unread-badge {
-        background: #007bff;
+        background: #dc3545;
         color: white;
         font-size: 11px;
         padding: 2px 8px;
         border-radius: 10px;
+        font-weight: bold;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .chat-layout {
+            flex-direction: column;
+            height: auto;
+            min-height: 100vh;
+        }
+        .chat-sidebar {
+            width: 100%;
+            max-height: 200px;
+            border-right: none;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .message-bubble {
+            max-width: 90%;
+        }
     }
 </style>
-{% endblock %}
 
-{% block content %}
 <div class="chat-layout">
     <div class="chat-sidebar">
         {% block chat_sidebar %}{% endblock %}
@@ -98,4 +135,15 @@
         {% block chat_main %}{% endblock %}
     </div>
 </div>
+
+<script>
+// Убираем лишние отступы у card при загрузке страницы чата
+document.addEventListener('DOMContentLoaded', function() {
+    const mainCard = document.querySelector('main.card');
+    if (mainCard) {
+        mainCard.style.padding = '0';
+        mainCard.style.maxWidth = '100%';
+    }
+});
+</script>
 {% endblock %}
