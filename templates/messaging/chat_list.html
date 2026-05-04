@@ -226,29 +226,46 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ====== АВТООБНОВЛЕНИЕ (каждые 3 секунды) ======
+// ====== АВТООБНОВЛЕНИЕ С УВЕДОМЛЕНИЯМИ ======
 let lastMessageId = {{ chat_messages.last.id|default:0 }};
+let notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4A=');
+
 setInterval(() => {
     fetch('{% url "messaging:get_chat_messages" selected_chat.id %}?after=' + lastMessageId)
         .then(r => r.json())
         .then(data => {
             if (data.messages && data.messages.length > 0) {
                 const area = document.getElementById('messagesArea');
+                let hasNew = false;
+
                 data.messages.forEach(msg => {
                     if (msg.id > lastMessageId) {
                         lastMessageId = msg.id;
+                        hasNew = true;
                         const bubbleClass = msg.is_own ? 'message-sent' : 'message-received';
                         const senderName = msg.is_own ? '' : `<div class="message-sender">${escapeHtml(msg.sender)}</div>`;
 
                         area.innerHTML += `
-                            <div class="message-bubble ${bubbleClass}">
+                            <div class="message-bubble ${bubbleClass}" style="animation: fadeIn 0.3s;">
                                 ${senderName}
-                                <div class="message-content">${escapeHtml(msg.content)}</div>
-                                <div class="message-time">${msg.sent_at}</div>
+                                <div class="message-content">${msg.content}</div>
+                                <div class="message-time">${msg.sent_at} 🆕</div>
                             </div>
                         `;
                     }
                 });
+
+                if (hasNew && !document.hasFocus()) {
+                    // Звук уведомления
+                    notificationSound.play().catch(() => {});
+
+                    // Меняем заголовок страницы
+                    document.title = '🔔 Новое сообщение | БМК Чат';
+                    setTimeout(() => {
+                        document.title = 'БМК Чат | Сайт';
+                    }, 3000);
+                }
+
                 scrollToBottom();
             }
         });
