@@ -140,7 +140,7 @@ def chat_room(request, chat_id):
 
 @login_required
 def send_chat_message(request, chat_id):
-    """Отправка сообщения в групповой чат (AJAX)"""
+    """Отправка сообщения в групповой чат (AJAX) с поддержкой файлов"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Только POST'}, status=405)
 
@@ -156,15 +156,35 @@ def send_chat_message(request, chat_id):
         content=content
     )
 
-    # Обработка файлов
+    # Обработка загруженных файлов
+    attachments_data = []
     for file in request.FILES.getlist('files'):
-        MessageAttachment.objects.create(
+        import os
+        from django.core.files.storage import default_storage
+
+        # Сохраняем файл
+        file_path = default_storage.save(
+            f'chat_attachments/{chat_id}/{file.name}',
+            file
+        )
+
+        attachment = MessageAttachment.objects.create(
             message=message,
             file_name=file.name,
-            file_path=f'attachments/{chat_id}/{file.name}',
+            file_path=file_path,
             file_type=file.content_type,
-            file_size=file.size
+            file_size=file.size,
+            file=file
         )
+
+        attachments_data.append({
+            'id': attachment.id,
+            'file_name': attachment.file_name,
+            'file_type': attachment.file_type,
+            'file_size': attachment.file_size,
+            'is_image': attachment.is_image,
+            'url': attachment.file.url if attachment.file else '#'
+        })
 
     # Обновляем last_message у чата
     chat.last_message = message
@@ -177,6 +197,7 @@ def send_chat_message(request, chat_id):
             'content': message.content,
             'sender': message.sender.get_full_name() or message.sender.username,
             'sent_at': message.sent_at.strftime('%H:%M'),
+            'attachments': attachments_data,
         }
     })
 
