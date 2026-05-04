@@ -14,11 +14,12 @@
     <nav class="nav" aria-label="Навигация">
       <a href="{% url 'home' %}">Главная</a>
       <a href="{% url 'about_us' %}">О нас</a>
-	  <a href="{% url 'advantages' %}">Преимущества</a>
-	  <a href="{% url 'news:list' %}">Новости</a>     
+      <a href="{% url 'advantages' %}">Преимущества</a>
+      <a href="{% url 'news:list' %}">Новости</a>
       <a href="{% url 'team' %}">Наша команда</a>
       <a href="{% url 'vacancies' %}">Вакансии</a>
       <a href="{% url 'contact' %}">Контакты</a>
+      <a href="{% url 'messaging:chat_list' %}">Чат</a>
       <a href="{% url 'sitemap' %}">Карта сайта</a>
     </nav>
 
@@ -51,6 +52,7 @@
     </div>
     <div class="auth">
       {% if user.is_authenticated %}
+        <a href="{% url 'messaging:chat_list' %}">💬</a>
         <a href="{% url 'profile' %}">Профиль</a>
         <a href="{% url 'logout' %}">Выйти</a>
       {% else %}
@@ -92,13 +94,14 @@
       <div class="muted">
         <div><b>Разделы</b></div>
         <div><a href="{% url 'about_us' %}">О нас</a></div>
-		<div><a href="{% url 'advantages' %}">Преимущества</a></div>
-		<div><a href="{% url 'news:list' %}">Новости</a></div>     
-		<div><a href="{% url 'team' %}">Наша команда</a></div>
-		<div><a href="{% url 'vacancies' %}">Вакансии</a></div>
-		<div><a href="{% url 'contact' %}">Контакты</a></div>
-		<div><a href="{% url 'sitemap' %}">Карта сайта</a></div>
-		<div><a href="{% url 'search' %}">Поиск</a></div>
+        <div><a href="{% url 'advantages' %}">Преимущества</a></div>
+        <div><a href="{% url 'news:list' %}">Новости</a></div>
+        <div><a href="{% url 'team' %}">Наша команда</a></div>
+        <div><a href="{% url 'vacancies' %}">Вакансии</a></div>
+        <div><a href="{% url 'messaging:chat_list' %}">Чат</a></div>
+        <div><a href="{% url 'contact' %}">Контакты</a></div>
+        <div><a href="{% url 'sitemap' %}">Карта сайта</a></div>
+        <div><a href="{% url 'search' %}">Поиск</a></div>
       </div>
     </div>
   </footer>
