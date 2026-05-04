@@ -75,4 +75,14 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "home"
 
+# Настройки для продакшена
+CSRF_TRUSTED_ORIGINS = [
+    'https://onastasy-site-bmk-91bb.twc1.net',
+    'http://onastasy-site-bmk-91bb.twc1.net',
+]
 
+ALLOWED_HOSTS = [
+    'onastasy-site-bmk-91bb.twc1.net',
+    '127.0.0.1',
+    'localhost',
+]
