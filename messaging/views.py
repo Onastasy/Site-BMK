@@ -279,3 +279,23 @@ def chat_members(request, chat_id):
         'chat': chat,
         'memberships': memberships
     })
+
+
+@login_required
+def search_messages(request, chat_id):
+    """Поиск сообщений в чате по подстроке"""
+    chat = get_object_or_404(ChatRoom, id=chat_id, members__user=request.user)
+    query = request.GET.get('q', '').strip()
+
+    messages_list = []
+    if query:
+        messages_list = chat.messages.filter(
+            content__icontains=query,
+            is_deleted=False
+        ).select_related('sender').order_by('-sent_at')[:50]
+
+    return render(request, 'messaging/search_results.html', {
+        'chat': chat,
+        'query': query,
+        'messages_list': messages_list,
+    })
