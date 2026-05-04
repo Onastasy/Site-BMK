@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Участники чата: {{ chat.title }}</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Пользователь</th>
+            <th>Роль</th>
+            <th>Присоединился</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in memberships %}
+        <tr>
+            <td>{{ m.user.get_full_name|default:m.user.username }}</td>
+            <td>{{ m.get_role_in_chat_display }}</td>
+            <td>{{ m.joined_at|date:"d.m.Y" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'messaging:chat_room' chat.id %}" class="btn btn-primary">← Вернуться в чат</a>
+{% endblock %}
