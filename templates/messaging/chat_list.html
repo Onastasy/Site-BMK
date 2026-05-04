@@ -1,0 +1,40 @@
+{% extends 'messaging/chat_base.html' %}
+
+{% block chat_sidebar %}
+<div class="p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">💬 Чаты</h5>
+        <a href="{% url 'messaging:create_chat' %}" class="btn btn-primary btn-sm">+</a>
+    </div>
+    <div class="list-group">
+        {% for item in chats %}
+        <a href="{% url 'messaging:chat_room' item.chat.id %}" class="list-group-item list-group-item-action chat-list-item">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ item.chat.title }}</strong>
+                    <br>
+                    <small class="text-muted">
+                        {% if item.last_msg %}
+                            {{ item.last_msg.content|truncatechars:40 }}
+                        {% else %}
+                            Нет сообщений
+                        {% endif %}
+                    </small>
+                </div>
+                {% if item.unread > 0 %}
+                <span class="unread-badge">{{ item.unread }}</span>
+                {% endif %}
+            </div>
+        </a>
+        {% empty %}
+        <p class="text-muted p-3">У вас пока нет групповых чатов</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block chat_main %}
+<div class="d-flex align-items-center justify-content-center h-100">
+    <p class="text-muted">Выберите чат для начала общения</p>
+</div>
+{% endblock %}
