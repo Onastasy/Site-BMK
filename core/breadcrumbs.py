@@ -26,6 +26,9 @@ def get_breadcrumbs(request):
         'users': 'Пользователи',
         'groups': 'Группы',
         'settings': 'Настройки',
+        'chats': 'БМК Чат',
+        'chat_room': 'Чат',
+        'chat_members': 'Участники',
     }
 
     url = ''
