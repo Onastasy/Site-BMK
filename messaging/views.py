@@ -104,6 +104,9 @@ def chat_list(request):
         except ChatMembership.DoesNotExist:
             pass
 
+        for msg in chat_messages:
+            msg.content = format_message(msg.content)
+
     return render(request, 'messaging/chat_list.html', {
         'chats': chats,
         'selected_chat': selected_chat,
