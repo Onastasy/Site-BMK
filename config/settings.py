@@ -53,7 +53,24 @@ TEMPLATES = [{
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+import os
+
+DB_ENGINE = os.environ.get('DB_ENGINE', 'sqlite')
+
+if DB_ENGINE == 'postgresql':
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=f"postgres://{os.environ.get('DB_USER', 'bmk_user')}:{os.environ.get('DB_PASSWORD', '')}@{os.environ.get('DB_HOST', 'localhost')}:{os.environ.get('DB_PORT', '5432')}/{os.environ.get('DB_NAME', 'bmk_chat')}"
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
   {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
