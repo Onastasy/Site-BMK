@@ -1,7 +1,7 @@
 from .markdown_utils import format_message
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Message
 from .forms import SendMessageForm
 
@@ -200,6 +200,7 @@ def send_chat_message(request, chat_id):
         'message': {
             'id': message.id,
             'content': message.content,
+            'content_formatted': format_message(message.content),
             'sender': message.sender.get_full_name() or message.sender.username,
             'sent_at': message.sent_at.strftime('%H:%M'),
             'attachments': attachments_data,
@@ -286,21 +287,25 @@ def chat_members(request, chat_id):
 
 @login_required
 def search_messages(request, chat_id):
-    """Поиск сообщений в чате по подстроке"""
     chat = get_object_or_404(ChatRoom, id=chat_id, members__user=request.user)
     query = request.GET.get('q', '').strip()
 
     messages_list = []
+    search_time = 0
+
     if query:
+        start = time.time()
         messages_list = chat.messages.filter(
             content__icontains=query,
             is_deleted=False
         ).select_related('sender').order_by('-sent_at')[:50]
+        search_time = round(time.time() - start, 3)
 
     return render(request, 'messaging/search_results.html', {
         'chat': chat,
         'query': query,
         'messages_list': messages_list,
+        'search_time': search_time,
     })
 
 
@@ -310,10 +315,6 @@ def pin_message(request, chat_id, message_id):
     chat = get_object_or_404(ChatRoom, id=chat_id)
     message = get_object_or_404(ChatMessage, id=message_id, chat=chat)
 
-    # Проверяем права (админ или владелец чата)
-    membership = ChatMembership.objects.get(user=request.user, chat=chat)
-    if membership.role_in_chat not in ['OWNER', 'ADMIN']:
-        return JsonResponse({'error': 'Недостаточно прав'}, status=403)
 
     pinned, created = PinnedMessage.objects.get_or_create(
         chat=chat,

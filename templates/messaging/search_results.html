@@ -4,9 +4,9 @@
 <h1>🔍 Поиск в чате: {{ chat.title }}</h1>
 
 <form action="{% url 'messaging:search_messages' chat.id %}" method="GET" style="margin-bottom: 20px;">
-  <div style="display: flex; gap: 10px; max-width: 500px;">
-    <input type="text" name="q" value="{{ query }}" placeholder="Введите текст для поиска..." 
-           style="flex: 1; padding: 10px; border: 1px solid #dee2e6; border-radius: 5px;">
+  <div style="display: flex; gap: 10px; max-width: 600px;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Введите текст для поиска..."
+           style="flex: 1; padding: 10px; border: 1px solid #dee2e6; border-radius: 5px;" autofocus>
     <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
       Найти
     </button>
@@ -14,18 +14,36 @@
 </form>
 
 {% if query %}
-  <p>Результаты поиска по запросу: <b>{{ query }}</b></p>
-  
+  <p>
+    По запросу <b>«{{ query }}»</b> найдено:
+    <b>{{ messages_list|length }} сообщений</b>
+    {% if search_time %}
+      за <b>{{ search_time }} сек.</b>
+    {% endif %}
+  </p>
+
   {% if messages_list %}
     {% for msg in messages_list %}
-    <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+    <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 10px; transition: 0.2s;"
+         onmouseover="this.style.borderColor='#007bff'" onmouseout="this.style.borderColor='#dee2e6'">
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <strong>{{ msg.sender.get_full_name|default:msg.sender.username }}</strong>
         <small style="color: #6c757d;">{{ msg.sent_at|date:"d.m.Y H:i" }}</small>
       </div>
-      <p style="margin-bottom: 0;">{{ msg.content|linebreaksbr }}</p>
+      <p style="margin-bottom: 0;">
+        {{ msg.content|linebreaksbr }}
+      </p>
       {% if msg.is_edited %}
         <small style="color: #6c757d;">(отредактировано)</small>
+      {% endif %}
+      {% if msg.attachments.exists %}
+        <div style="margin-top: 8px;">
+          {% for att in msg.attachments.all %}
+            <span style="background: #f0f0f0; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
+              📎 {{ att.file_name }}
+            </span>
+          {% endfor %}
+        </div>
       {% endif %}
     </div>
     {% endfor %}
@@ -37,6 +55,6 @@
 {% endif %}
 
 <p style="margin-top: 20px;">
-  <a href="{% url 'messaging:chat_room' chat.id %}">← Вернуться в чат</a>
+  <a href="{% url 'messaging:chat_list' %}?chat={{ chat.id }}">← Вернуться в чат</a>
 </p>
 {% endblock %}
