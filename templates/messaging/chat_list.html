@@ -70,6 +70,20 @@
         </div>
     </div>
 
+    <!-- Закреплённые сообщения -->
+    {% if selected_chat.pinned_messages.exists %}
+    <div style="background: #fff3cd; padding: 8px 20px; border-bottom: 2px solid #ffc107;">
+        {% for pinned in selected_chat.pinned_messages.all %}
+            {% if pinned.is_active %}
+            <div style="font-size: 13px;">
+                📌 <strong>{{ pinned.message.sender.get_full_name }}:</strong>
+                {{ pinned.message.content|truncatechars:100 }}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Лента сообщений -->
     <div class="messages-area" id="messagesArea">
         {% for msg in chat_messages %}
@@ -87,9 +101,16 @@
                 {% endfor %}
             </div>
             {% endif %}
-            <div class="message-time">
-                {{ msg.sent_at|time:"H:i" }}
-                {% if msg.is_edited %}(ред.){% endif %}
+            <div class="message-time" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>
+                    {{ msg.sent_at|time:"H:i" }}
+                    {% if msg.is_edited %}(ред.){% endif %}
+                </span>
+                <button onclick="pinMessage({{ msg.id }})"
+                        style="background: none; border: none; cursor: pointer; font-size: 14px; color: #6c757d;"
+                        title="Закрепить сообщение">
+                    📌
+                </button>
             </div>
         </div>
         {% empty %}
@@ -111,7 +132,7 @@
             <div class="d-flex align-items-end gap-2">
                 <div class="flex-grow-1">
                     <input type="text" name="content" class="form-control"
-                           placeholder="Введите сообщение... (поддерживается Markdown)"
+                           placeholder="Введите сообщение... (**жирный**, *курсив*)"
                            id="messageInput" autocomplete="off">
                     <div id="selectedFiles" class="mt-2"></div>
                 </div>
@@ -148,28 +169,26 @@
 {% block extra_js %}
 {% if selected_chat %}
 <script>
-// ====== АВТОПРОКРУТКА ВНИЗ ======
+// ====== ПРОКРУТКА ВНИЗ ======
 function scrollToBottom() {
-    const area = document.getElementById('messagesArea');
+    var area = document.getElementById('messagesArea');
     if (area) {
         area.scrollTop = area.scrollHeight;
     }
 }
-
-// Прокручиваем при загрузке
 scrollToBottom();
 
-// ====== ОТПРАВКА СООБЩЕНИЯ БЕЗ ПЕРЕЗАГРУЗКИ ======
+// ====== ОТПРАВКА СООБЩЕНИЯ (с перезагрузкой) ======
 document.getElementById('messageForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const input = document.getElementById('messageInput');
-    const content = input.value.trim();
+    var input = document.getElementById('messageInput');
+    var content = input.value.trim();
     if (!content) return;
 
-    const sendButton = document.getElementById('sendButton');
-    sendButton.disabled = true;
-    sendButton.textContent = '⏳ Отправка...';
+    var btn = document.getElementById('sendButton');
+    btn.disabled = true;
+    btn.textContent = '⏳';
 
     fetch(this.action, {
         method: 'POST',
@@ -179,37 +198,21 @@ document.getElementById('messageForm').addEventListener('submit', function(e) {
         },
         body: 'content=' + encodeURIComponent(content)
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
         if (data.success) {
-            // Очищаем поле
-            input.value = '';
-
-            // Добавляем новое сообщение в ленту
-            const area = document.getElementById('messagesArea');
-            const now = new Date();
-            const time = now.getHours().toString().padStart(2, '0') + ':' +
-                         now.getMinutes().toString().padStart(2, '0');
-
-            area.innerHTML += `
-                <div class="message-bubble message-sent">
-                    <div class="message-content">${data.message.content_formatted || escapeHtml(data.message.content)}</div>
-                    <div class="message-time">${time}</div>
-                </div>
-            `;
-
-            scrollToBottom();
+            // Просто перезагружаем страницу
+            window.location.href = window.location.href;
         } else {
-            alert('Ошибка: ' + (data.error || 'Не удалось отправить'));
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            btn.disabled = false;
+            btn.textContent = '📤 Отправить';
         }
     })
-    .catch(error => {
-        alert('Ошибка соединения');
-        console.error(error);
-    })
-    .finally(() => {
-        sendButton.disabled = false;
-        sendButton.textContent = '📤 Отправить';
+    .catch(function() {
+        alert('Ошибка соединения с сервером');
+        btn.disabled = false;
+        btn.textContent = '📤 Отправить';
     });
 });
 
@@ -221,76 +224,46 @@ document.getElementById('messageInput').addEventListener('keypress', function(e)
     }
 });
 
-// ====== ЗАЩИТА ОТ XSS ======
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// ====== АВТООБНОВЛЕНИЕ С УВЕДОМЛЕНИЯМИ ======
-let lastMessageId = {{ chat_messages.last.id|default:0 }};
-let notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4A=');
-
-setInterval(() => {
-    fetch('{% url "messaging:get_chat_messages" selected_chat.id %}?after=' + lastMessageId)
-        .then(r => r.json())
-        .then(data => {
-            if (data.messages && data.messages.length > 0) {
-                const area = document.getElementById('messagesArea');
-                let hasNew = false;
-
-                data.messages.forEach(msg => {
-                    if (msg.id > lastMessageId) {
-                        lastMessageId = msg.id;
-                        hasNew = true;
-                        const bubbleClass = msg.is_own ? 'message-sent' : 'message-received';
-                        const senderName = msg.is_own ? '' : `<div class="message-sender">${escapeHtml(msg.sender)}</div>`;
-
-                        area.innerHTML += `
-                            <div class="message-bubble ${bubbleClass}" style="animation: fadeIn 0.3s;">
-                                ${senderName}
-                                <div class="message-content">${msg.content_formatted || escapeHtml(msg.content)}</div>
-                                <div class="message-time">${msg.sent_at} 🆕</div>
-                            </div>
-                        `;
-                    }
-                });
-
-                if (hasNew && !document.hasFocus()) {
-                    notificationSound.play().catch(() => {});
-                    document.title = '🔔 Новое сообщение | БМК Чат';
-                    setTimeout(() => {
-                        document.title = 'БМК Чат | Сайт';
-                    }, 3000);
-                }
-
-                scrollToBottom();
-            }
-        });
-}, 3000);
-
 // ====== ОТОБРАЖЕНИЕ ВЫБРАННЫХ ФАЙЛОВ ======
 document.getElementById('fileInput').addEventListener('change', function() {
-    const fileList = this.files;
-    const container = document.getElementById('selectedFiles');
+    var fileList = this.files;
+    var container = document.getElementById('selectedFiles');
     container.innerHTML = '';
 
-    for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        const size = file.size > 1024*1024
+    for (var i = 0; i < fileList.length; i++) {
+        var file = fileList[i];
+        var size = file.size > 1024*1024
             ? (file.size/(1024*1024)).toFixed(1) + ' MB'
             : (file.size/1024).toFixed(0) + ' KB';
 
-        container.innerHTML += `
-            <span class="badge bg-light text-dark me-2 mb-1">
-                📎 ${file.name} (${size})
-                <button type="button" class="btn-close btn-close-sm ms-1"
-                        onclick="this.parentElement.remove()"></button>
-            </span>
-        `;
+        container.innerHTML += '<span class="badge bg-light text-dark me-2 mb-1">📎 '
+            + file.name + ' (' + size + ')</span>';
     }
 });
+
+// ====== ЗАКРЕПЛЕНИЕ СООБЩЕНИЯ ======
+function pinMessage(messageId) {
+    var url = '/messages/chats/{{ selected_chat.id }}/pin/' + messageId + '/';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            alert(data.is_pinned ? '📌 Сообщение закреплено!' : 'Закрепление снято');
+            window.location.href = window.location.href;
+        } else {
+            alert('Ошибка: ' + (data.error || 'Не удалось закрепить'));
+        }
+    })
+    .catch(function(error) {
+        alert('Ошибка соединения');
+    });
+}
 </script>
 {% endif %}
 {% endblock %}

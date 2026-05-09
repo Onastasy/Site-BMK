@@ -313,7 +313,6 @@ class Integration(models.Model):
         ('JIRA', 'Jira'),
         ('GITHUB', 'GitHub'),
         ('GITLAB', 'GitLab'),
-        ('TELEGRAM', 'Telegram'),
     ]
 
     type = models.CharField('Тип', max_length=50, choices=INTEGRATION_TYPES)

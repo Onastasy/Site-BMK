@@ -3,6 +3,13 @@
 {% block title %}БМК Чат | {{ block.super }}{% endblock %}
 
 {% block content %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- Highlight.js для подсветки кода -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
 <style>
     /* Сброс отступов для чата */
     main.card {
@@ -124,6 +131,41 @@
         .message-bubble {
             max-width: 90%;
         }
+
+    /* Подсветка кода */
+    .message-content pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 12px 15px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 8px 0;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    .message-content pre code {
+        background: transparent;
+        padding: 0;
+        color: inherit;
+    }
+    .message-content code.inline-code {
+        background: #f0f0f0;
+        color: #e74c3c;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 13px;
+    }
+    .message-sent .message-content code.inline-code {
+        background: rgba(0,0,0,0.1);
+    }
+    .mention {
+        background: #e8f0fe;
+        color: #1a73e8;
+        padding: 1px 4px;
+        border-radius: 4px;
+        font-weight: 500;
     }
 </style>
 
