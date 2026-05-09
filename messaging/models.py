@@ -25,7 +25,7 @@ class ChatRoom(models.Model):
         CHANNEL = 'CHANNEL', 'Канал'
         SUPPORT = 'SUPPORT', 'Техподдержка'
 
-    title = models.CharField('Название', max_length=200)
+    title = models.CharField('Название', max_length=200, blank=True, null=True)
     type = models.CharField(
         'Тип чата',
         max_length=20,
@@ -52,6 +52,12 @@ class ChatRoom(models.Model):
         blank=True,
         related_name='+'
     )
+
+    def save(self, *args, **kwargs):
+        """Автоматически генерирует заголовок для личных чатов без названия"""
+        if self.type == self.ChatType.PRIVATE and not self.title:
+            self.title = f'Личный чат #{self.pk or "новый"}'
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Чат-комната'
