@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from core import views as core_views
 from admin_panel import views as admin_panel_views
 
@@ -28,5 +30,7 @@ urlpatterns = [
   path('admin-panel/settings/', admin_panel_views.site_settings, name='admin_settings'),
   path('admin-panel/activity/', admin_panel_views.activity_log, name='admin_activity'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
 
 handler404 = "core.views.handler404"

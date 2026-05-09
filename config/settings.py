@@ -92,27 +92,5 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "home"
 
-# Настройки для продакшена (Timeweb Cloud)
-import os
-
-# Определяем, запущены ли мы на сервере
-IS_PRODUCTION = os.environ.get('DJANGO_SETTINGS_MODULE') == 'config.settings'
-
-if IS_PRODUCTION:
-    DEBUG = False
-    ALLOWED_HOSTS = [
-        'onastasy-site-bmk-91bb.twc1.net',
-        'www.onastasy-site-bmk-91bb.twc1.net',
-        'localhost',
-        '127.0.0.1',
-    ]
-    CSRF_TRUSTED_ORIGINS = [
-        'https://onastasy-site-bmk-91bb.twc1.net',
-        'http://onastasy-site-bmk-91bb.twc1.net',
-    ]
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_SECURE = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-else:
-    DEBUG = True
-    ALLOWED_HOSTS = ['*']
+DEBUG = True
+ALLOWED_HOSTS = ['*']
