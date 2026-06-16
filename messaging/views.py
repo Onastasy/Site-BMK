@@ -1,9 +1,10 @@
 from .markdown_utils import format_message
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from .models import Message
 from .forms import SendMessageForm
+from django.contrib import messages
 
 
 @login_required
